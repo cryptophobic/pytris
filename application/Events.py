@@ -1,4 +1,4 @@
-from typing import Dict
+import pygame
 
 
 class Events:
@@ -7,8 +7,16 @@ class Events:
 
     def subscribe(self, subscriber: str, keys_to_track_down: tuple, keys_to_track_pressed: tuple):
         self.subscribers[subscriber] = {
-            'keys_to_track_pressed': {key: 0 for key in keys_to_track_pressed},
-            'keys_to_track_down': {key: {'down': None, 'up': None} for key in keys_to_track_down}
+            'keys_to_track_pressed': {key: [] for key in keys_to_track_pressed},
+            'keys_to_track_down': {key: [] for key in keys_to_track_down}
         }
 
+    def unsubscribe(self, subscriber: str):
+        if subscriber in self.subscribers:
+            del self.subscribers[subscriber]
+
+    def listen(self):
+        pressed = pygame.key.get_pressed()
+        for subscriber in self.subscribers:
+            for event in pressed[subscriber]:
 
