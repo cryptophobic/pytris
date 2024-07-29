@@ -4,7 +4,6 @@ from application.Renderer import Renderer
 from application.Timer import Timer
 
 import pygame
-from pygame.locals import *
 
 
 class Engine(object):
