@@ -18,3 +18,7 @@ class Timer:
     @property
     def last_timestamp(self):
         return self.__last_timestamp
+
+    @staticmethod
+    def current_timestamp():
+        return pygame.time.get_ticks()

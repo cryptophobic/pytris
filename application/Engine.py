@@ -8,43 +8,58 @@ from pygame.locals import *
 
 
 class Engine(object):
+
+    fps = 60
+
     def __init__(self):
         self.eventProcessor = Events()
         self.stateManager = State()
         self.renderer = Renderer()
         self.ticker = Timer()
         self.screen = None
+        self.interval = 1000 / Engine.fps
 
     def finalize(self):
         pygame.quit()
 
     def initialize(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((700, 500), 0, 32)
+        self.screen = pygame.display.set_mode((500, 900), 0, 32)
         pygame.display.set_caption("Hello Tetris")
         self.screen.fill((0, 0, 0))
+
+    def check_exit(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return True
+
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_ESCAPE]:
+            return True
+
+        return False
 
     def run(self):
         self.initialize()
         game_over = False
-        count = 0
-        pressed_up = False
+
+        player1 = (pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
+        player2 = (pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN, pygame.K_RIGHT)
+        self.eventProcessor.subscribe('player1', player1)
+        self.eventProcessor.subscribe('player2', player2)
+
+        threshold = self.ticker.last_timestamp + self.interval
+        first_timestamp = self.ticker.last_timestamp
+
         while not game_over:
             self.ticker.tick()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    game_over = True
+            self.eventProcessor.listen(self.ticker.last_timestamp)
+            game_over = self.check_exit()
+            events = self.eventProcessor.slice(first_timestamp, self.ticker.last_timestamp)
+            first_timestamp = self.ticker.last_timestamp
 
-            pressed = pygame.key.get_pressed()
-            if pressed[pygame.K_ESCAPE]:
-                game_over = True
-
-            if pressed_up and not pressed[pygame.K_UP]:
-                print("KeyUp")
-
-            if not pressed_up and pressed[pygame.K_UP]:
-                print("KeyDown")
-
-            pressed_up = pressed[pygame.K_UP]
+            if self.ticker.last_timestamp >= threshold:
+                threshold += self.interval
+                self.renderer.render()
 
         self.finalize()
