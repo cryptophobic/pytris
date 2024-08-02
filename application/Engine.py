@@ -33,8 +33,8 @@ class Engine(object):
     def run(self):
         player1 = Player('player1', wasd)
         player2 = Player('player2', uldr)
-        self.eventProcessor.subscribe(player1.name, player1.controls.keys())
-        self.eventProcessor.subscribe(player2.name, player2.controls.keys())
+        self.eventProcessor.subscribe(player1.name, player1.controls)
+        self.eventProcessor.subscribe(player2.name, player2.controls)
 
         self.stateManager.register_player(player1)
         self.stateManager.register_player(player2)

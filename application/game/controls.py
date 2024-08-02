@@ -1,18 +1,37 @@
 import pygame
 from collections import UserDict
 
+from application.game.objects.Piece import Piece
+from application.game.objects.shapes import *
+
 
 class MoveControls(UserDict):
-    def __init__(self, rotate_left, move_left, move_right, move_down):
+    def __init__(self,  rotate_left, move_left, move_right, move_down):
         super().__init__()
-        self.rotate_left: int = rotate_left
-        self.move_left: int = move_left
-        self.move_right: int = move_right
-        self.move_down: int = move_down
-        #self.data[rotate_left] = move_down
 
-    def keys(self) -> tuple:
-        return self.move_left, self.move_right, self.move_down, self.rotate_left
+        self.data[rotate_left] = self.rotate_left
+        self.data[move_left] = self.move_left
+        self.data[move_down] = self.move_down
+        self.data[move_right] = self.move_right
+
+    def action(self, key: int, piece: Piece):
+        if key in self.data:
+            self.data[key](piece)
+
+    def move_left(self, piece: Piece):
+        piece.velocity.x -= 10
+
+    def move_right(self, piece: Piece):
+        piece.velocity.x += 10
+
+    def move_down(self, piece: Piece):
+        piece.velocity.y -= 10
+
+    def rotate_left(self, piece: Piece):
+        piece.rotate += ROTATE_LEFT
+
+    def rotate_right(self, piece: Piece):
+        piece.rotate += ROTATE_RIGHT
 
 
 wasd = MoveControls(rotate_left=pygame.K_w, move_left=pygame.K_a, move_right=pygame.K_d, move_down=pygame.K_s)

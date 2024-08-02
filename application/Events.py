@@ -1,14 +1,19 @@
 import pygame
 from application.Timer import Timer
-from typing import NamedTuple, Dict, Tuple, List
+from typing import Dict, Tuple, List
+from dataclasses import dataclass
+
+from application.game.controls import MoveControls
 
 
-class KeyPressLogRecord(NamedTuple):
+@dataclass
+class KeyPressLogRecord:
     dt: int
     down: bool
 
 
-class KeyPressLog(NamedTuple):
+@dataclass
+class KeyPressLog:
     down: bool
     log: List[KeyPressLogRecord]
     subscribers: int
@@ -24,17 +29,17 @@ class Events:
         self.keys_down: List[int] = []
         self.next_flush = Timer.current_timestamp() + Events.flush
 
-    def subscribe(self, subscriber: str, keys: tuple):
+    def subscribe(self, subscriber: str, keys: MoveControls):
 
         if subscriber in self.subscribers:
             return False
 
-        for key in keys:
+        for key in keys.keys():
             if self.key_map.get(key) is None:
                 self.key_map[key] = KeyPressLog(down=False, subscribers=0, log=[])
             self.key_map[key].subscribers += 1
 
-        self.subscribers[subscriber] = keys
+        self.subscribers[subscriber] = tuple(keys.keys())
 
         return True
 
@@ -69,7 +74,7 @@ class Events:
         for key, events_log in self.key_map.items():
             if pressed[key] and events_log.down is not True:
                 self.key_map[key].down = True
-                self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=False))
+                self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=True))
                 self.keys_down.append(key)
 
     def slice(self, start: int, end: int) -> Dict[int, List[KeyPressLog]]:
@@ -81,7 +86,7 @@ class Events:
             self.key_map = {
                 key: KeyPressLog(
                     down=value.down,
-                    log=list(filter(lambda timestamp: (end <= timestamp[0]), value.log)),
+                    log=list(filter(lambda timestamp: (end <= timestamp.dt), value.log)),
                     subscribers=value.subscribers
                 )
                 for key, value in local_keymap.items()

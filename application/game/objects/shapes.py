@@ -1,11 +1,11 @@
 import numpy as np
 
-LEFT = 0
-RIGHT = 1
+ROTATE_LEFT = -1
+ROTATE_RIGHT = 1
 
 _rotation_matrix = {
-    LEFT: np.array([[0, 1], [-1, 0]]),
-    RIGHT: np.array([[0, -1], [1, 0]]),
+    ROTATE_LEFT: np.array([[0, 1], [-1, 0]]),
+    ROTATE_RIGHT: np.array([[0, -1], [1, 0]]),
 }
 
 shapes = np.array([
@@ -19,7 +19,7 @@ shapes = np.array([
 ])
 
 
-def rotate(shape_array, direction=LEFT):
+def rotate(shape_array, direction=ROTATE_LEFT):
     return np.matmul(shape_array, _rotation_matrix[direction])
 
 
@@ -27,17 +27,17 @@ def _move(shape_array, times_x, times_y):
     return np.array([[pair[0] + times_x, pair[1] + times_y] for pair in shape_array])
 
 
-def move_left(shape_array, times=1):
+def move_shape_left(shape_array, times=1):
     return _move(shape_array, -times, 0)
 
 
-def move_right(shape_array, times=1):
+def move_shape_right(shape_array, times=1):
     return _move(shape_array, times, 0)
 
 
-def move_top(shape_array, times=1):
+def move_shape_up(shape_array, times=1):
     return _move(shape_array, 0, times)
 
 
-def move_bottom(shape_array, times=1):
+def move_shape_down(shape_array, times=1):
     return _move(shape_array, 0, -times)
