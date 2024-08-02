@@ -16,6 +16,6 @@ class Vec2:
         return math.dist([self.x, self. y], [other.x, other.y])
 
     def scalar_multiply(self, scalar):
-        return Vec2(self.x * scalar, self.y * scalar)
+        return Vec2(int(self.x * scalar), int(self.y * scalar))
 
 

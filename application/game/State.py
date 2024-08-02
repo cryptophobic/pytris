@@ -16,11 +16,12 @@ class State:
         self.place = 10
         self.players: Dict[str, Player] = {}
         self.key_map: Dict[int, Set[str]] = {}
+        self.changed = False
         pass
 
     def register_player(self, player: Player):
         self.players[player.name] = player
-        player.body = Piece(shape=Shape(), coordinates=Vec2(x=self.place, y=25))
+        player.body = Piece(shape=Shape(), velocity=Vec2(x=0, y=0), coordinates=Vec2(x=self.place, y=25))
         self.desk[player.body.coordinates.x][player.body.coordinates.y] = player
         self.place += 20
         for key in player.controls.keys():
@@ -36,8 +37,8 @@ class State:
             if 0 < player.body.velocity.x < 10:
                 player.body.velocity.x = 10
 
-            player.body.coordinates.x += (player.body.velocity.x // 10)
-            player.body.coordinates.y += (player.body.velocity.y // 10)
+            player.body.coordinates.x += player.body.velocity.scalar_multiply(0.1).x
+            player.body.coordinates.y += player.body.velocity.scalar_multiply(0.1).y
             self.desk[check.x][check.y] = None
             self.desk[player.body.coordinates.x][player.body.coordinates.y] = player
             player.body.velocity.y = 0
@@ -47,9 +48,10 @@ class State:
         print(f"{player_name} ")
         for event in events_log:
             if event.down is True:
+                self.changed = True
                 player = self.players[player_name]
                 player.action(key)
-                check = player.body.coordinates + player.body.velocity
+                check = player.body.coordinates + player.body.velocity.scalar_multiply(0.1)
                 place = self.desk[check.x][check.y] # type: Player
                 if place is not None:
                     distance = player.body.coordinates.distance_to(check)
@@ -65,6 +67,7 @@ class State:
                 for player_name in player_names:
                     self.update_player(player_name, key, events_log)
 
-        self.move_players()
+        if self.changed is True:
+            self.move_players()
 
 

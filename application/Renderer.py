@@ -15,6 +15,7 @@ class Renderer:
 
     def render(self, objects: List[Piece]):
         color = (255, 255, 255)
+        self.screen.fill((0, 0, 0))
 
         for obj in objects:
             pygame.draw.rect(self.screen, color, pygame.Rect(
@@ -22,4 +23,5 @@ class Renderer:
                 obj.coordinates.y * 10,
                 10,
                 10))
+
             pygame.display.flip()
