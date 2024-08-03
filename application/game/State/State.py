@@ -14,6 +14,7 @@ from application.game.types import Vec2
 
 class State:
     def __init__(self):
+        self.ready_for_render = True
         self.desk = Desk(50, 50)
         self.place = 10
         self.players = PlayersCollection()
@@ -35,6 +36,7 @@ class State:
             player.body.coordinates.y += player.body.velocity.y
             try:
                 self.desk.put_player(player)
+                self.ready_for_render = True
             except IndexError as e:
                 player.body.coordinates.x -= player.body.velocity.x
                 player.body.coordinates.y -= player.body.velocity.y
@@ -45,7 +47,6 @@ class State:
             player.body.velocity.x = 0
 
     def update_player(self, player_name: str, key: int, events_log: List[KeyPressLog]):
-        print(f"{player_name} ")
         for event in events_log:
             if event.down is not True:
                 continue

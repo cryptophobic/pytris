@@ -8,6 +8,7 @@ class Player:
 
     def __init__(self, name: str, controls: MoveControls):
         self.name = name
+        self.ready_for_render = True
         self.prio = 0
         self.body: Piece = Piece(
             shape=Shape(),

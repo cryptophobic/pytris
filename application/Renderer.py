@@ -1,4 +1,6 @@
 from typing import List
+
+from application.game.Player import Player
 from application.game.objects.Piece import Piece
 import pygame
 
@@ -13,14 +15,16 @@ class Renderer:
     def __del__(self):
         pygame.quit()
 
-    def render(self, objects: List[Piece]):
-        #color = (255, 255, 255)
+    def render(self, objects: List[Player]):
+        if len(objects) == 0:
+            return
+
         self.screen.fill((0, 0, 0))
 
         for obj in objects:
-            for square in obj.shape.shape:
-                rect = pygame.Rect((obj.coordinates.x + square[0]) * 20, (obj.coordinates.y + square[1]) * 20, 20, 20)
-                pygame.draw.rect(self.screen, obj.color, rect)
-            pygame.display.update()
+            for square in obj.body.shape.shape:
+                rect = pygame.Rect((obj.body.coordinates.x + square[0]) * 20, (obj.body.coordinates.y + square[1]) * 20, 20, 20)
+                pygame.draw.rect(self.screen, obj.body.color, rect)
+            obj.ready_for_render = False
 
-            #pygame.display.flip()
+        pygame.display.update()

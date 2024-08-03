@@ -58,4 +58,6 @@ class Engine(object):
 
             if self.ticker.last_timestamp >= threshold:
                 threshold += self.interval
-                self.renderer.render([player1.body, player2.body, player3.body])
+                if self.stateManager.ready_for_render is True:
+                    self.renderer.render([player1, player2, player3])
+                    self.stateManager.ready_for_render = False
