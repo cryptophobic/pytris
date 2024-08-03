@@ -40,3 +40,4 @@ class MoveControls(UserDict):
 
 wasd = MoveControls(move_up=pygame.K_w, move_left=pygame.K_a, move_right=pygame.K_d, move_down=pygame.K_s)
 uldr = MoveControls(move_up=pygame.K_UP, move_left=pygame.K_LEFT, move_right=pygame.K_RIGHT, move_down=pygame.K_DOWN)
+tfgh = MoveControls(move_up=pygame.K_t, move_left=pygame.K_f, move_right=pygame.K_h, move_down=pygame.K_g)

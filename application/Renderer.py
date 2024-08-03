@@ -6,7 +6,7 @@ import pygame
 class Renderer:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((500, 900), 0, 32)
+        self.screen = pygame.display.set_mode((1000, 1000), 0, 32)
         pygame.display.set_caption("Hello Tetris")
         self.screen.fill((0, 0, 0))
 
@@ -18,5 +18,9 @@ class Renderer:
         self.screen.fill((0, 0, 0))
 
         for obj in objects:
-            pygame.draw.rect(self.screen, obj.color, pygame.Rect(obj.coordinates.x * 10, obj.coordinates.y * 10, 10, 10))
-            pygame.display.flip()
+            for square in obj.shape.shape:
+                rect = pygame.Rect((obj.coordinates.x + square[0]) * 20, (obj.coordinates.y + square[1]) * 20, 20, 20)
+                pygame.draw.rect(self.screen, obj.color, rect)
+            pygame.display.update()
+
+            #pygame.display.flip()

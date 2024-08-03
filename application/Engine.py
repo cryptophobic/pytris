@@ -6,7 +6,7 @@ from application.Timer import Timer
 
 import pygame
 
-from application.game.controls import wasd, uldr
+from application.game.controls import wasd, uldr, tfgh
 
 
 class Engine(object):
@@ -33,25 +33,29 @@ class Engine(object):
     def run(self):
         player1 = Player('player1', wasd)
         player2 = Player('player2', uldr)
+        player3 = Player('player3', tfgh)
         self.eventProcessor.subscribe(player1.name, player1.controls)
         self.eventProcessor.subscribe(player2.name, player2.controls)
+        self.eventProcessor.subscribe(player3.name, player3.controls)
 
         self.stateManager.register_player(player1)
         self.stateManager.register_player(player2)
+        self.stateManager.register_player(player3)
 
         threshold = self.ticker.last_timestamp + self.interval
         first_timestamp = self.ticker.last_timestamp
-        player1.body.color = (255, 255, 255)
-        player2.body.color = (100, 100, 100)
+        player1.body.color = (100, 150, 0)
+        player2.body.color = (150, 100, 0)
+        player3.body.color = (0, 100, 150)
 
         while not self.game_over:
             self.ticker.tick()
             self.check_exit()
             self.eventProcessor.listen(self.ticker.last_timestamp)
+            events = self.eventProcessor.slice(first_timestamp, self.ticker.last_timestamp)
+            self.stateManager.update_players(events)
+            first_timestamp = self.ticker.last_timestamp
 
             if self.ticker.last_timestamp >= threshold:
-                events = self.eventProcessor.slice(first_timestamp, threshold)
-                self.stateManager.update_players(events)
-                first_timestamp = self.ticker.last_timestamp
                 threshold += self.interval
-                self.renderer.render([player1.body, player2.body])
+                self.renderer.render([player1.body, player2.body, player3.body])

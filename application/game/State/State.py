@@ -27,7 +27,7 @@ class State:
         self.desk.put_player(player)
         self.key_map.load_keys_from_player(player)
 
-        self.place += 20
+        self.place += 10
 
     def move_players(self):
         for player in self.players.sorted_dirty_players():
@@ -36,6 +36,9 @@ class State:
             try:
                 self.desk.put_player(player)
             except IndexError as e:
+                player.body.coordinates.x -= player.body.velocity.x
+                player.body.coordinates.y -= player.body.velocity.y
+
                 sys.stderr.write(f"move_players, cannot move {str(e)}\n")
 
             player.body.velocity.y = 0
