@@ -1,6 +1,6 @@
 from application.Events import Events
 from application.game.Player import Player
-from application.game.State import State
+from application.game.State.State import State
 from application.Renderer import Renderer
 from application.Timer import Timer
 
@@ -41,6 +41,8 @@ class Engine(object):
 
         threshold = self.ticker.last_timestamp + self.interval
         first_timestamp = self.ticker.last_timestamp
+        player1.body.color = (255, 255, 255)
+        player2.body.color = (100, 100, 100)
 
         while not self.game_over:
             self.ticker.tick()

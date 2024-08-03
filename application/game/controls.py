@@ -20,16 +20,16 @@ class MoveControls(UserDict):
             self.data[key](piece)
 
     def move_left(self, piece: Piece):
-        piece.velocity.x -= 10
+        piece.velocity.x -= 1
 
     def move_right(self, piece: Piece):
-        piece.velocity.x += 10
+        piece.velocity.x += 1
 
     def move_down(self, piece: Piece):
-        piece.velocity.y += 10
+        piece.velocity.y += 1
 
     def move_up(self, piece: Piece):
-        piece.velocity.y -= 10
+        piece.velocity.y -= 1
 
     def rotate_left(self, piece: Piece):
         piece.rotate += ROTATE_LEFT

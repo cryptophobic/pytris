@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 import math
 
+
 @dataclass
 class Vec2:
     x: int
     y: int
+
+    def is_dirty(self) -> bool:
+        return self.x != 0 or self.y != 0
 
     def __add__(self, other):
         return Vec2(self.x + other.x, self.y + other.y)

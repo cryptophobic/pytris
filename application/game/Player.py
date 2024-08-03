@@ -8,10 +8,10 @@ class Player:
 
     def __init__(self, name: str, controls: MoveControls):
         self.name = name
+        self.prio = 0
         self.body: Piece = Piece(
             shape=Shape(),
             velocity=Vec2(x=0, y=0),
-            direction=Vec2(x=0, y=0),
             coordinates=Vec2(x=0, y=0),
         )
         self.controls = controls

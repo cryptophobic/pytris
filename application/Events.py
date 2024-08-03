@@ -2,7 +2,6 @@ import pygame
 from application.Timer import Timer
 from typing import Dict, Tuple, List
 from dataclasses import dataclass
-
 from application.game.controls import MoveControls
 
 
