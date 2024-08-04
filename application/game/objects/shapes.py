@@ -20,8 +20,6 @@ shapes = np.array([
     [[0, -1], [0, 0], [0, 1], [0, 2]],  # stick
 ])
 
-print(type(shapes[0]))
-
 
 def rotate(shape_array, times_direction=ROTATE_LEFT):
     res = copy.copy(shape_array)

@@ -1,5 +1,4 @@
 from collections import UserDict
-from dataclasses import dataclass
 
 from application.game.Player import Player
 
@@ -10,7 +9,7 @@ class PlayersCollection(UserDict):
 
     def sorted_dirty_players(self):
         def is_dirty(player: Player) -> bool:
-            return player.body.is_dirty() or player.body.rotate != 0
+            return player.body.is_dirty() or player.above_threshold() or player.body.rotate != 0
 
         return sorted(filter(is_dirty, self.data.values()), key=lambda x: x.prio, reverse=True)
 

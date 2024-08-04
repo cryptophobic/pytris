@@ -7,16 +7,13 @@ from typing import Dict, List
 from application.game.State.Desk import Desk
 from application.game.State.KeyMap import KeyMap
 from application.game.State.PlayersCollection import PlayersCollection
-from application.game.objects import shapes
-from application.game.objects.Piece import Piece
-from application.game.objects.Shape import Shape
-from application.game.types import Vec2
+from application.game.vectors import Vec2
 
 
 class State:
     def __init__(self):
         self.ready_for_render = True
-        self.desk = Desk(50, 20)
+        self.desk = Desk(30, 15)
         self.place = 3
         self.players = PlayersCollection()
         self.key_map = KeyMap()
@@ -24,7 +21,8 @@ class State:
         pass
 
     def register_player(self, player: Player):
-        player.body = Piece(shape=Shape(), velocity=Vec2(x=0, y=0), coordinates=Vec2(x=self.place, y=0), mass=1)
+        player.body.velocity = Vec2(0, 0)
+        player.body.coordinates = Vec2(x=self.place, y=0)
         self.players.add(player)
         try:
             self.desk.put_player(player)
@@ -37,34 +35,12 @@ class State:
 
     def draw_players(self):
         for player in self.players.sorted_dirty_players():
-            if player.body.is_dirty():
-                self.move_player(player)
+            if player.above_threshold():
+                player.move_down()
+                player.calculate_threshold()
 
-            if player.body.rotate != 0:
-                self.rotate_player(player)
-
-    def rotate_player(self, player: Player):
-        player.body.shape.shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
-        try:
-            self.desk.put_player(player)
-            self.ready_for_render = True
-        except IndexError as e:
-            player.body.shape.shape = shapes.rotate(player.body.shape.shape, -player.body.rotate)
-
-            sys.stderr.write(f"move_players, cannot rotate {str(e)}\n")
-        player.body.rotate = 0
-
-    def move_player(self, player: Player):
-        player.body.coordinates += player.body.velocity
-        try:
-            self.desk.put_player(player)
-            self.ready_for_render = True
-        except IndexError as e:
-            player.body.coordinates -= player.body.velocity
-
-            sys.stderr.write(f"move_players, cannot move {str(e)}\n")
-
-        player.body.velocity -= player.body.velocity
+            if self.desk.put_player(player):
+                self.ready_for_render = True
 
     def update_player(self, player_name: str, key: int, events_log: List[KeyPressLog]):
         for event in events_log:

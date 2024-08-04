@@ -1,5 +1,6 @@
 from typing import List
 
+from application import config
 from application.game.events.Events import Events
 from application.game.Player import Player
 from application.game.State.State import State
@@ -13,43 +14,22 @@ from application.game.controls import wasd, uldr, tfgh
 
 class Engine(object):
 
-    fps = 60
-    initial_speed_of_falling_down = 1000
-
     def __init__(self):
         self.eventProcessor = Events()
         self.stateManager = State()
         self.renderer = Renderer()
         self.ticker = Timer()
         self.game_over = False
-        self.interval = 1000 / Engine.fps
-        self.down_interval = Engine.initial_speed_of_falling_down
+        self.interval = 1000 / config.FPS
+        self.down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN
 
     def init_players(self) -> List[Player]:
-        player1 = Player(name='player1', controls=wasd, speed=1.5)
-        player2 = Player(name='player2', controls=uldr, speed=2.1)
-        player3 = Player(name='player3', controls=tfgh, speed=1.8)
-        self.eventProcessor.subscribe(player1.name, player1.controls)
-        self.eventProcessor.subscribe(player2.name, player2.controls)
-        self.eventProcessor.subscribe(player3.name, player3.controls)
+        players = config.players
+        for player in players:
+            self.eventProcessor.subscribe(player.name, player.controls)
+            self.stateManager.register_player(player)
 
-        self.stateManager.register_player(player1)
-        self.stateManager.register_player(player2)
-        self.stateManager.register_player(player3)
-
-        player1.body.color = (100, 150, 0)
-        player2.body.color = (150, 100, 0)
-        player3.body.color = (0, 100, 150)
-
-        down_threshold = self.ticker.last_timestamp + self.down_interval
-
-        for player in [player1, player2, player3]:
-            self.eventProcessor.scheduler.schedule_key_pressed(
-                down_threshold,
-                player.controls.movements_map.move_down,
-                self.down_interval // player.speed)
-
-        return [player1, player2, player3]
+        return players
 
     def check_exit(self):
         for event in pygame.event.get():
@@ -78,5 +58,5 @@ class Engine(object):
                 self.stateManager.update_players(events)
                 first_timestamp = self.ticker.last_timestamp
                 if self.stateManager.ready_for_render is True:
-                    self.renderer.render(players)
+                    self.renderer.render(players, self.stateManager.desk.bricks)
                     self.stateManager.ready_for_render = False

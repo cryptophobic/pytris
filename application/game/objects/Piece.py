@@ -1,5 +1,7 @@
+from typing import List, Tuple
+
 from application.game.objects.Shape import Shape
-from application.game.types import *
+from application.game.vectors import *
 from dataclasses import dataclass
 
 
@@ -11,8 +13,15 @@ class Pushed:
 
 class Piece:
 
-    def __init__(self, shape: Shape, mass: int = 1, rotate: int = 0, velocity: Vec2 = Vec2(0, 0), pushed: Pushed = None, coordinates: Vec2 = Vec2(0, 0)):
-        self.color = (255, 255, 255)
+    def __init__(self,
+                 shape: Shape,
+                 color: Tuple[int, int, int] = (255, 255, 255),
+                 mass: int = 1,
+                 rotate: int = 0,
+                 velocity: Vec2 = Vec2(0, 0),
+                 pushed: Pushed = None,
+                 coordinates: Vec2 = Vec2(0, 0)):
+        self.color = color
         self.shape: Shape = shape
         self.mass: int = mass
         self.rotate: int = rotate
