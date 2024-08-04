@@ -52,12 +52,12 @@ class Engine(object):
             self.ticker.tick()
             self.check_exit()
             self.eventProcessor.listen(self.ticker.last_timestamp)
-            events = self.eventProcessor.slice(first_timestamp, self.ticker.last_timestamp)
-            self.stateManager.update_players(events)
-            first_timestamp = self.ticker.last_timestamp
 
             if self.ticker.last_timestamp >= threshold:
                 threshold += self.interval
+                events = self.eventProcessor.slice(first_timestamp, threshold)
+                self.stateManager.update_players(events)
+                first_timestamp = self.ticker.last_timestamp
                 if self.stateManager.ready_for_render is True:
                     self.renderer.render([player1, player2, player3])
                     self.stateManager.ready_for_render = False

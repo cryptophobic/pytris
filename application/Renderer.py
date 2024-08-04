@@ -8,7 +8,7 @@ import pygame
 class Renderer:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((1000, 1000), 0, 32)
+        self.screen = pygame.display.set_mode((400, 1000), 0, 32)
         pygame.display.set_caption("Hello Tetris")
         self.screen.fill((0, 0, 0))
 

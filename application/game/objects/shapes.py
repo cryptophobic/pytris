@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 ROTATE_LEFT = -1
@@ -15,12 +17,19 @@ shapes = np.array([
     [[0, 0], [0, 1], [1, 1], [1, 0]],  # square
     [[0, 0], [-1, 0], [-1, -1], [0, 1]],  # twice
     [[0, 0], [-1, 0], [-1, 1], [0, -1]],  # twice reverted
-    [[0, 0], [-1, 0], [1, 0], [2, 0]],  # stick
+    [[0, -1], [0, 0], [0, 1], [0, 2]],  # stick
 ])
 
+print(type(shapes[0]))
 
-def rotate(shape_array, direction=ROTATE_LEFT):
-    return np.matmul(shape_array, _rotation_matrix[direction])
+
+def rotate(shape_array, times_direction=ROTATE_LEFT):
+    res = copy.copy(shape_array)
+    times = abs(times_direction)
+    direction = ROTATE_LEFT if times_direction <= ROTATE_LEFT else ROTATE_RIGHT
+    for _ in range(times):
+        res = np.matmul(res, _rotation_matrix[direction])
+    return res
 
 
 def _move(shape_array, times_x, times_y):
