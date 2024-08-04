@@ -6,7 +6,8 @@ from application.game.types import Vec2
 
 class Player:
 
-    def __init__(self, name: str, controls: MoveControls):
+    def __init__(self, name: str, controls: MoveControls, speed: float = 1):
+        self.speed = speed
         self.name = name
         self.ready_for_render = True
         self.prio = 0
@@ -20,4 +21,8 @@ class Player:
 
     def action(self, key: int):
         self.controls.action(key, self.body)
+
+    def move_down(self):
+        self.controls.move_down(self.body)
+
 

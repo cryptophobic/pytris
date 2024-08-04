@@ -3,6 +3,7 @@ from application.Timer import Timer
 from typing import Dict, Tuple, List
 from dataclasses import dataclass
 from application.game.controls import MoveControls
+from application.game.events.Scheduler import Scheduler
 
 
 @dataclass
@@ -23,6 +24,7 @@ class Events:
     flush = 10000
 
     def __init__(self):
+        self.scheduler = Scheduler()
         self.subscribers: Dict[str, Tuple] = {}
         self.key_map: Dict[int, KeyPressLog] = {}
         self.keys_down: List[int] = []
@@ -65,13 +67,13 @@ class Events:
                 self.keys_down.pop(idx)
                 continue
 
-            if not pressed[key]:
+            if not pressed[key] and not self.scheduler.is_pressed(key):
                 self.key_map[key].down = False
                 self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=False))
                 self.keys_down.pop(idx)
 
         for key, events_log in self.key_map.items():
-            if pressed[key] and events_log.down is not True:
+            if (pressed[key] or self.scheduler.is_pressed(key)) and events_log.down is not True:
                 self.key_map[key].down = True
                 self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=True))
                 self.keys_down.append(key)

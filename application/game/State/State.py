@@ -1,8 +1,8 @@
 import sys
 
-from application.Events import KeyPressLog
+from application.game.events.Events import KeyPressLog
 from application.game.Player import Player
-from typing import Dict, List, Set
+from typing import Dict, List
 
 from application.game.State.Desk import Desk
 from application.game.State.KeyMap import KeyMap
@@ -55,19 +55,16 @@ class State:
         player.body.rotate = 0
 
     def move_player(self, player: Player):
-        player.body.coordinates.x += player.body.velocity.x
-        player.body.coordinates.y += player.body.velocity.y
+        player.body.coordinates += player.body.velocity
         try:
             self.desk.put_player(player)
             self.ready_for_render = True
         except IndexError as e:
-            player.body.coordinates.x -= player.body.velocity.x
-            player.body.coordinates.y -= player.body.velocity.y
+            player.body.coordinates -= player.body.velocity
 
             sys.stderr.write(f"move_players, cannot move {str(e)}\n")
 
-        player.body.velocity.y = 0
-        player.body.velocity.x = 0
+        player.body.velocity -= player.body.velocity
 
     def update_player(self, player_name: str, key: int, events_log: List[KeyPressLog]):
         for event in events_log:

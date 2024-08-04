@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from enum import Enum
+
 import pygame
 from collections import UserDict
 
@@ -5,9 +8,26 @@ from application.game.objects.Piece import Piece
 from application.game.objects.shapes import *
 
 
+@dataclass
+class Movements:
+    rotate_left: int = 0
+    rotate_right: int = 0
+    move_right: int = 0
+    move_left: int = 0
+    move_down: int = 0
+
+
 class MoveControls(UserDict):
-    def __init__(self, move_left, move_right, move_down, rotate_left=0):
+
+    def __init__(self, move_left, move_right, move_down, rotate_left):
         super().__init__()
+
+        self.movements_map = Movements(
+            rotate_left=rotate_left,
+            move_right=move_right,
+            move_down=move_down,
+            move_left=move_left,
+        )
 
         self.data[rotate_left] = self.rotate_left
         #self.data[move_up] = self.move_up
