@@ -1,5 +1,6 @@
 import sys
 
+from application import config
 from application.game.events.Events import KeyPressLog
 from application.game.Player import Player
 from typing import Dict, List
@@ -13,7 +14,7 @@ from application.game.vectors import Vec2
 class State:
     def __init__(self):
         self.ready_for_render = True
-        self.desk = Desk(30, 15)
+        self.desk = Desk(config.DESK_HEIGHT, config.DESK_WIDTH)
         self.place = 3
         self.players = PlayersCollection()
         self.key_map = KeyMap()
@@ -37,6 +38,7 @@ class State:
         for player in self.players.sorted_dirty_players():
             if player.above_threshold():
                 player.move_down()
+                self.desk.check_on_move(player)
                 player.calculate_threshold()
 
             if self.desk.put_player(player):

@@ -30,7 +30,7 @@ class Piece:
         self.coordinates: Vec2 = coordinates
 
     def is_dirty(self):
-        return self.velocity.is_dirty() or self.pushed.direction.is_dirty()
+        return self.velocity.is_dirty() or self.pushed.direction.is_dirty() or self.rotate != 0
 
     def push(self, direction: Vec2, mass: int):
         self.pushed.mass += mass

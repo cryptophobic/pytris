@@ -9,8 +9,6 @@ from application.Timer import Timer
 
 import pygame
 
-from application.game.controls import wasd, uldr, tfgh
-
 
 class Engine(object):
 

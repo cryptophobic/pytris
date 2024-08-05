@@ -166,12 +166,14 @@ class Desk:
                 color=player.body.color,
                 name=player.name,
                 position=Position(x=place.x + square[0], y=place.y + square[1]))
+            print(f"ground [{place.x + square[0]}][{place.y + square[1]}]")
             self.__desk[place.x + square[0]][place.y + square[1]] = brick
             self.__bricks[place.y].append(brick)
 
         player.body.shape = Shape()
         player.body.coordinates.y = 0
         player.body.velocity = Vec2(0, 0)
+
         self.__players[player.name] = []
 
     def check_on_rotate(self, player: Player) -> bool:
