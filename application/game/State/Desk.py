@@ -27,6 +27,7 @@ class ObjectsToMove(NamedTuple):
 
 class Desk:
     def __init__(self, height, width):
+        self.__gateway: Player|None = None
         self.__width = width
         self.__height = height
         self.__players: Dict[str, List[Position]] = {}
@@ -35,21 +36,7 @@ class Desk:
 
     def __is_valid_position(self, position: Position) -> bool:
         if not ((0 <= position.x < self.__width) and (position.y < self.__height)):
-            #sys.stderr.write(f"Position {position} out of range {self.__width}x{self.__height}")
             return False
-
-        return True
-
-    def __fits(self, player_name: str, shape: np.ndarray, check: Vec2) -> bool:
-        for square in shape:
-            position = Position(x=check.x + square[0], y=check.y + square[1])
-            if not self.__is_valid_position(position):
-                return False
-
-            place = self.__desk[position.x][position.y]
-            if place is not None and place.name != player_name:
-                sys.stdout.write(f"Player {player_name} already occupied\n")
-                return False
 
         return True
 
@@ -64,16 +51,19 @@ class Desk:
         if player.body.is_dirty():
             check = approved_position + player.body.velocity
 
-            move_commit = self.__fits(player.name, shape, check)
-            if move_commit:
+            [mass, places] = self.get_obstacles_on_position(player.name, shape, check)
+            if mass == 0:
+                move_commit = True
                 approved_position = check
 
         if player.body.rotate != 0:
             shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
 
-            rotate_commit = self.__fits(player.name, shape, approved_position)
-            if not rotate_commit:
+            [mass, places] = self.get_obstacles_on_position(player.name, shape, approved_position)
+            if mass != 0:
                 shape = player.body.shape.shape
+            else:
+                rotate_commit = True
 
         if not move_commit and not rotate_commit and self.__players.get(player.name) is not None:
             return False
@@ -84,6 +74,8 @@ class Desk:
         for square in shape:
             position = Position(x=approved_position.x + square[0], y=approved_position.y + square[1])
             self.__players[player.name].append(Position(x=position.x, y=position.y))
+            if position.y < 0:
+                continue
             self.__desk[position.x][position.y] = player
 
         player.body.coordinates = approved_position
@@ -100,15 +92,24 @@ class Desk:
 
         self.__players.pop(player_name, None)
 
-    def get_players_on_position(self, player_name: str, shape: numpy.ndarray, coordinates: Vec2) -> ObjectsToMove:
+    def get_obstacles_on_position(self, player_name: str, shape: numpy.ndarray, check: Vec2) -> ObjectsToMove:
         places = set()
         for square in shape:
-            if not self.__is_valid_position(Position(x=coordinates.x + square[0], y=coordinates.y + square[1])):
+
+            if check.y + square[1] < 0:
+                continue
+
+            if not self.__is_valid_position(Position(x=check.x + square[0], y=check.y + square[1])):
                 return ObjectsToMove(mass=-1, objects=set())
 
-            place = self.__desk[coordinates.x + square[0]][coordinates.y + square[1]]
+            place = self.__desk[check.x + square[0]][check.y + square[1]]
 
             if type(place) is Brick:
+                # print(self.__desk[5])
+                # print(self.__desk[6])
+                # print(self.__desk[7])
+
+                print(f"Brick {check.x + square[0]} {check.y + square[1]}")
                 return ObjectsToMove(mass=-1, objects=set())
 
             if place is not None and place.name != player_name:
@@ -116,14 +117,35 @@ class Desk:
 
         return ObjectsToMove(sum(map(lambda x: x.body.mass, places)), places)
 
+    def __reserve_gateway(self, player: Player):
+        if self.__gateway is None:
+            self.__gateway = player
+            return True
+
+        if self.__gateway.name == player.name:
+            return True
+
+        if self.__gateway.body.coordinates.y >= 2:
+            self.__gateway = player
+            return True
+
+        return False
+
+    def activate_player(self, player: Player):
+        if not self.__reserve_gateway(player):
+            return False
+
+        [mass, places] = self.get_obstacles_on_position(player.name, player.body.shape.shape, player.body.coordinates)
+        if mass != 0:
+            return False
+
+        player.idle = False
+        self.put_player(player)
+        return True
+
     def check_on_move(self, player: Player) -> bool:
         check = player.body.coordinates + player.body.velocity
-        try:
-            mass_to_move, places = self.get_players_on_position(player.name, player.body.shape.shape, check)
-        except IndexError as error:
-            sys.stderr.write(f"check_on_move, {str(error)}\n")
-            player.body.velocity = Vec2(0, 0)
-            return False
+        mass_to_move, places = self.get_obstacles_on_position(player.name, player.body.shape.shape, check)
 
         if mass_to_move > player.body.mass:
             player.body.velocity = Vec2(0, 0)
@@ -134,7 +156,8 @@ class Desk:
                 self.ground(player)
             else:
                 player.body.velocity.x = 0
-                return False
+
+            return False
 
         for place in places:
             place.prio = player.prio + 1
@@ -166,25 +189,24 @@ class Desk:
                 color=player.body.color,
                 name=player.name,
                 position=Position(x=place.x + square[0], y=place.y + square[1]))
-            print(f"ground [{place.x + square[0]}][{place.y + square[1]}]")
+            print(f"{place.x + square[0]} {place.y + square[1]}")
             self.__desk[place.x + square[0]][place.y + square[1]] = brick
             self.__bricks[place.y].append(brick)
 
         player.body.shape = Shape()
-        player.body.coordinates.y = 0
         player.body.velocity = Vec2(0, 0)
+        player.body.coordinates = Vec2(self.__width // 2, -1)
+        player.idle = True
+
+        print(self.__desk[5])
+        print(self.__desk[6])
+        print(self.__desk[7])
 
         self.__players[player.name] = []
 
     def check_on_rotate(self, player: Player) -> bool:
         rotated_shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
-        check = player.body.coordinates
-        try:
-            mass_to_move, places = self.get_players_on_position(player.name, rotated_shape, check)
-        except IndexError as error:
-            sys.stderr.write(f"check_on_rotate, {str(error)}\n")
-            player.body.rotate = 0
-            return False
+        mass_to_move, places = self.get_obstacles_on_position(player.name, rotated_shape, player.body.coordinates)
 
         # TODO: maybe we can try to move nearby objects with rotating
         if mass_to_move > 0:

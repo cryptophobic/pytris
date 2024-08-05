@@ -15,7 +15,6 @@ class State:
     def __init__(self):
         self.ready_for_render = True
         self.desk = Desk(config.DESK_HEIGHT, config.DESK_WIDTH)
-        self.place = 3
         self.players = PlayersCollection()
         self.key_map = KeyMap()
         self.changed = False
@@ -23,22 +22,20 @@ class State:
 
     def register_player(self, player: Player):
         player.body.velocity = Vec2(0, 0)
-        player.body.coordinates = Vec2(x=self.place, y=0)
+        player.body.coordinates = Vec2(x=config.DESK_WIDTH // 2, y=-1)
         self.players.add(player)
-        try:
-            self.desk.put_player(player)
-        except IndexError as e:
-            sys.stderr.write(str(e))
-
         self.key_map.load_keys_from_player(player)
 
-        self.place += 5
-
     def draw_players(self):
+        for player in self.players.idle_players():
+            self.desk.activate_player(player)
+
         for player in self.players.sorted_dirty_players():
             if player.above_threshold():
+
                 player.move_down()
                 self.desk.check_on_move(player)
+                print(player.body.velocity, player.body.coordinates)
                 player.calculate_threshold()
 
             if self.desk.put_player(player):
@@ -50,6 +47,9 @@ class State:
                 continue
 
             player = self.players[player_name]
+            if player.idle:
+                continue
+
             player.action(key)
             if player.body.is_dirty():
                 self.desk.check_on_move(player)
@@ -67,5 +67,3 @@ class State:
                     self.update_player(player_name, key, events_log)
 
         self.draw_players()
-
-

@@ -12,9 +12,9 @@ class Player:
 
     def __init__(self, name: str, controls: MoveControls, speed: float = 1, color: Tuple[int, int, int] = (255, 255, 255),):
         self.speed = speed
-        self.down_threshold = Timer.current_timestamp()
+        self.__idle: bool = True
+        self.down_threshold = 0
         self.name = name
-        self.ready_for_render = True
         self.prio = 0
         self.body: Piece = Piece(
             shape=Shape(),
@@ -25,12 +25,29 @@ class Player:
         self.controls = controls
         self.score: int = 0
 
+    @property
+    def idle(self):
+        return self.__idle
+
+    @idle.setter
+    def idle(self, value):
+        if value is False:
+            self.__init_threshold()
+
+        self.__idle = value
+
     def above_threshold(self):
         return Timer.current_timestamp() > self.down_threshold
 
     def calculate_threshold(self):
         down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN // self.speed
-        self.down_threshold = Timer.current_timestamp() + down_interval
+        self.down_threshold += down_interval
+        if self.above_threshold():
+            self.__init_threshold()
+
+    def __init_threshold(self):
+        down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN // self.speed
+        self.down_threshold += Timer.current_timestamp() + down_interval
 
     def action(self, key: int):
         self.controls.action(key, self.body)

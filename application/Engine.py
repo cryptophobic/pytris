@@ -56,5 +56,5 @@ class Engine(object):
                 self.stateManager.update_players(events)
                 first_timestamp = self.ticker.last_timestamp
                 if self.stateManager.ready_for_render is True:
-                    self.renderer.render(players, self.stateManager.desk.bricks)
+                    self.renderer.render(self.stateManager.players.to_render_players(), self.stateManager.desk.bricks)
                     self.stateManager.ready_for_render = False

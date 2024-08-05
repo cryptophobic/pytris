@@ -30,7 +30,6 @@ class Renderer:
                     config.BLOCK_WIDTH,
                     config.BLOCK_HEIGHT)
                 pygame.draw.rect(self.screen, obj.body.color, rect)
-            obj.ready_for_render = False
 
         for brick in bricks:
             rect = pygame.Rect(
