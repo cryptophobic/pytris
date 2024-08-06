@@ -1,5 +1,6 @@
 from collections import UserDict
 
+from application.Timer import Timer
 from application.game.Player import Player
 
 

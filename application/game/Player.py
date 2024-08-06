@@ -47,7 +47,7 @@ class Player:
 
     def __init_threshold(self):
         down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN // self.speed
-        self.down_threshold += Timer.current_timestamp() + down_interval
+        self.down_threshold = Timer.current_timestamp() + down_interval
 
     def action(self, key: int):
         self.controls.action(key, self.body)

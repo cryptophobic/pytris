@@ -32,10 +32,8 @@ class State:
 
         for player in self.players.sorted_dirty_players():
             if player.above_threshold():
-
                 player.move_down()
                 self.desk.check_on_move(player)
-                print(player.body.velocity, player.body.coordinates)
                 player.calculate_threshold()
 
             if self.desk.put_player(player):

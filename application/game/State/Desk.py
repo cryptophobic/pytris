@@ -88,6 +88,8 @@ class Desk:
         current_position = self.__players.get(player_name)
         if current_position is not None:
             for square in current_position:
+                if square.y < 0:
+                    continue
                 self.__desk[square.x][square.y] = None
 
         self.__players.pop(player_name, None)
@@ -105,11 +107,6 @@ class Desk:
             place = self.__desk[check.x + square[0]][check.y + square[1]]
 
             if type(place) is Brick:
-                # print(self.__desk[5])
-                # print(self.__desk[6])
-                # print(self.__desk[7])
-
-                print(f"Brick {check.x + square[0]} {check.y + square[1]}")
                 return ObjectsToMove(mass=-1, objects=set())
 
             if place is not None and place.name != player_name:
@@ -143,6 +140,46 @@ class Desk:
         self.put_player(player)
         return True
 
+    def is_grounded(self, player) -> bool:
+        if player.body.velocity.y <= 0:
+            return False
+
+        place = player.body.coordinates + Vec2(0, 1)
+        shape = player.body.shape.shape
+        for square in shape:
+            if not self.__is_valid_position(Position(x=place.x + square[0], y=place.y + square[1])):
+                return True
+
+            if place.y + square[1] < 0:
+                continue
+
+            is_ground = self.__desk[place.x + square[0]][place.y + square[1]]
+            if is_ground is not None and type(is_ground) is Brick:
+                return True
+
+        return False
+
+    def ground(self, player):
+        shape = player.body.shape.shape
+        place = player.body.coordinates
+        for square in shape:
+            brick = Brick(
+                color=player.body.color,
+                name=player.name,
+                position=Position(x=place.x + square[0], y=place.y + square[1]))
+            if place.y + square[1] < 0:
+                continue
+
+            self.__desk[place.x + square[0]][place.y + square[1]] = brick
+            self.__bricks[place.y].append(brick)
+
+        player.body.shape = Shape()
+        player.body.velocity = Vec2(0, 0)
+        player.body.coordinates = Vec2(self.__width // 2, -1)
+        player.idle = True
+
+        self.__players[player.name] = []
+
     def check_on_move(self, player: Player) -> bool:
         check = player.body.coordinates + player.body.velocity
         mass_to_move, places = self.get_obstacles_on_position(player.name, player.body.shape.shape, check)
@@ -164,45 +201,6 @@ class Desk:
             place.body.velocity += player.body.velocity
 
         return True
-
-    def is_grounded(self, player) -> bool:
-        if player.body.velocity.y <= 0:
-            return False
-
-        place = player.body.coordinates + Vec2(0, 1)
-        shape = player.body.shape.shape
-        for square in shape:
-            if not self.__is_valid_position(Position(x=place.x + square[0], y=place.y + square[1])):
-                return True
-
-            is_ground = self.__desk[place.x + square[0]][place.y + square[1]]
-            if is_ground is not None and type(is_ground) is Brick:
-                return True
-
-        return False
-
-    def ground(self, player):
-        shape = player.body.shape.shape
-        place = player.body.coordinates
-        for square in shape:
-            brick = Brick(
-                color=player.body.color,
-                name=player.name,
-                position=Position(x=place.x + square[0], y=place.y + square[1]))
-            print(f"{place.x + square[0]} {place.y + square[1]}")
-            self.__desk[place.x + square[0]][place.y + square[1]] = brick
-            self.__bricks[place.y].append(brick)
-
-        player.body.shape = Shape()
-        player.body.velocity = Vec2(0, 0)
-        player.body.coordinates = Vec2(self.__width // 2, -1)
-        player.idle = True
-
-        print(self.__desk[5])
-        print(self.__desk[6])
-        print(self.__desk[7])
-
-        self.__players[player.name] = []
 
     def check_on_rotate(self, player: Player) -> bool:
         rotated_shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
