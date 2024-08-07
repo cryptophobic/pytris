@@ -15,6 +15,7 @@ class KeyPressLogRecord:
 @dataclass
 class KeyPressLog:
     down: bool
+    interval: int
     log: List[KeyPressLogRecord]
     subscribers: int
 
@@ -35,9 +36,9 @@ class Events:
         if subscriber in self.subscribers:
             return False
 
-        for key in keys.keys():
+        for key, action in keys.items():
             if self.key_map.get(key) is None:
-                self.key_map[key] = KeyPressLog(down=False, subscribers=0, log=[])
+                self.key_map[key] = KeyPressLog(down=False, subscribers=0, log=[], interval=action.repeat_delta)
             self.key_map[key].subscribers += 1
 
         self.subscribers[subscriber] = tuple(keys.keys())
@@ -58,6 +59,18 @@ class Events:
 
             self.key_map[key].subscribers -= 1
 
+    def is_down_event_expired(self, key: int) -> bool:
+        key_map = self.key_map.get(key)
+        if key_map is None or key_map.interval < 0 or key_map.down is False or len(key_map.log) == 0:
+            return False
+
+        last_event = key_map.log[-1]
+
+        if last_event.dt <= Timer.current_timestamp() - key_map.interval:
+            return True
+
+        return False
+
     def listen(self, ticks: int):
         pressed = pygame.key.get_pressed()
 
@@ -67,7 +80,7 @@ class Events:
                 self.keys_down.pop(idx)
                 continue
 
-            if not pressed[key] and not self.scheduler.is_pressed(key):
+            if (self.is_down_event_expired(key) or not pressed[key]) and not self.scheduler.is_pressed(key):
                 self.key_map[key].down = False
                 self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=False))
                 self.keys_down.pop(idx)
@@ -87,6 +100,7 @@ class Events:
             self.key_map = {
                 key: KeyPressLog(
                     down=value.down,
+                    interval=value.interval,
                     log=list(filter(lambda timestamp: (end <= timestamp.dt), value.log)),
                     subscribers=value.subscribers
                 )

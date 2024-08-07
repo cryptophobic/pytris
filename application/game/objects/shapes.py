@@ -10,6 +10,7 @@ _rotation_matrix = {
     ROTATE_RIGHT: np.array([[0, -1], [1, 0]]),
 }
 
+
 shapes = np.array([
     [[-1, -1], [0, -1], [0, 0], [0, 1]],  # ge
     [[0, -1], [1, -1], [0, 0], [0, 1]],  # reverted ge
@@ -20,6 +21,16 @@ shapes = np.array([
     [[0, -1], [0, 0], [0, 1], [0, -2]],  # stick
 ])
 
+borders = [
+    np.array([[-1, -2], [0, -2], [-2, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1], [0, 2]]),  # ge
+    np.array([[-1, -1], [0, -2], [2, -1], [1, -2], [1, 0], [-1, 0], [1, 1], [-1, 1], [0, 2]]),  # reverted ge
+    np.array([[1, 0], [-2, 0], [-1, 1], [-1, -1], [1, 1], [0, 2], [1, -1], [0, -2]]),  # triple
+    np.array([[0, -1], [1, -1], [-1, 0], [2, 0], [-1, 1], [2, 1], [0, 2], [1, 2]]),  # square
+    np.array([[-1, -2], [-2, -1], [0, -1], [-2, 0], [1, 0], [-1, 1], [1, 1], [0, 2]]),  # twice
+    np.array([[0, -2], [-1, -1], [1, -1], [-2, 0], [1, 0], [-2, 1], [0, 1], [-1, 2]]),  # twice reverted
+    np.array([[0, -3], [-1, -2], [1, -2], [-1, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [1, 1], [0, 2]]),  # stick
+]
+
 
 def rotate(shape_array, times_direction=ROTATE_LEFT):
     res = copy.copy(shape_array)
@@ -29,22 +40,3 @@ def rotate(shape_array, times_direction=ROTATE_LEFT):
         res = np.matmul(res, _rotation_matrix[direction])
     return res
 
-
-def _move(shape_array, times_x, times_y):
-    return np.array([[pair[0] + times_x, pair[1] + times_y] for pair in shape_array])
-
-
-def move_shape_left(shape_array, times=1):
-    return _move(shape_array, -times, 0)
-
-
-def move_shape_right(shape_array, times=1):
-    return _move(shape_array, times, 0)
-
-
-def move_shape_up(shape_array, times=1):
-    return _move(shape_array, 0, times)
-
-
-def move_shape_down(shape_array, times=1):
-    return _move(shape_array, 0, -times)

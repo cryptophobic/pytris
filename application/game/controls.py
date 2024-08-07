@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Callable
 
 import pygame
 from collections import UserDict
@@ -17,6 +18,15 @@ class Movements:
     move_down: int = 0
 
 
+@dataclass
+class Action:
+    function: Callable[[Piece], None]
+    repeat_delta: int = -1
+
+    def __call__(self, piece: Piece):
+        self.function(piece)
+
+
 class MoveControls(UserDict):
 
     def __init__(self, move_left, move_right, move_down, rotate_left):
@@ -29,11 +39,11 @@ class MoveControls(UserDict):
             move_left=move_left,
         )
 
-        self.data[rotate_left] = self.rotate_left
+        self.data[rotate_left] = Action(self.rotate_left)
         #self.data[move_up] = self.move_up
-        self.data[move_left] = self.move_left
-        self.data[move_down] = self.move_down
-        self.data[move_right] = self.move_right
+        self.data[move_left] = Action(self.move_left, 100)
+        self.data[move_down] = Action(self.move_down, 30)
+        self.data[move_right] = Action(self.move_right, 100)
 
     def action(self, key: int, piece: Piece):
         if key in self.data:

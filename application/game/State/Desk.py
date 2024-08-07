@@ -1,4 +1,5 @@
 import sys
+from dataclasses import dataclass
 from typing import List, NamedTuple, Dict, Set, Tuple
 import numpy
 import numpy as np
@@ -23,6 +24,12 @@ class Brick(NamedTuple):
 class ObjectsToMove(NamedTuple):
     mass: int
     objects: Set[Player | Brick] | None
+
+
+@dataclass
+class Cell:
+    borders: int = 0
+    entity: Player | Brick | None = None
 
 
 class Desk:
