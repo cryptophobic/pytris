@@ -39,7 +39,7 @@ class MoveControls(UserDict):
             move_left=move_left,
         )
 
-        self.data[rotate_left] = Action(self.rotate_left)
+        self.data[rotate_left] = Action(self.rotate_left, 200)
         #self.data[move_up] = self.move_up
         self.data[move_left] = Action(self.move_left, 100)
         self.data[move_down] = Action(self.move_down, 30)
