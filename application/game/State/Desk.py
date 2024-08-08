@@ -1,5 +1,6 @@
 import sys
 from dataclasses import dataclass
+import random
 from typing import List, NamedTuple, Dict, Set, Tuple
 import numpy
 import numpy as np
@@ -34,7 +35,7 @@ class Cell:
 
 class Desk:
     def __init__(self, height, width):
-        self.__gateway: Player|None = None
+        self.__gateway: Player | None = None
         self.__width = width
         self.__height = height
         self.__players: Dict[str, List[Position]] = {}
@@ -171,7 +172,7 @@ class Desk:
         place = player.body.coordinates
         for square in shape:
             brick = Brick(
-                color=player.body.color,
+                color=player.body.shape.color,
                 name=player.name,
                 position=Position(x=place.x + square[0], y=place.y + square[1]))
             if place.y + square[1] < 0:
@@ -182,10 +183,14 @@ class Desk:
 
         player.body.shape = Shape()
         player.body.velocity = Vec2(0, 0)
+        player.body.rotate = 0
         player.body.coordinates = Vec2(self.__width // 2, -1)
         player.idle = True
 
         self.__players[player.name] = []
+
+    def remove_lines(self):
+        pass
 
     def check_on_move(self, player: Player) -> bool:
         check = player.body.coordinates + player.body.velocity
@@ -200,6 +205,8 @@ class Desk:
                 self.ground(player)
             else:
                 player.body.velocity.x = 0
+                if player.body.velocity.y > 1:
+                    player.body.velocity.y -= 1
 
             return False
 

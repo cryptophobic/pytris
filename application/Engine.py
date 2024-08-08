@@ -29,6 +29,18 @@ class Engine(object):
 
         return players
 
+    def update_events(self, players: List[Player]):
+        for player in players:
+            down_interval = self.down_interval // player.speed
+            down_threshold = Timer.current_timestamp() + down_interval
+
+            self.eventProcessor.scheduler.schedule_key_pressed(
+                down_threshold,
+                player.controls.movements_map.move_down,
+                down_interval)
+
+            player.commit_speed()
+
     def check_exit(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -40,7 +52,7 @@ class Engine(object):
 
     def run(self):
 
-        players = self.init_players()
+        self.init_players()
 
         render_threshold = self.ticker.last_timestamp + self.interval
         first_timestamp = self.ticker.last_timestamp
@@ -48,6 +60,7 @@ class Engine(object):
         while not self.game_over:
             self.ticker.tick()
             self.check_exit()
+            self.update_events(self.stateManager.players.to_apply_speed_players())
             self.eventProcessor.listen(self.ticker.last_timestamp)
 
             if self.ticker.last_timestamp >= render_threshold:

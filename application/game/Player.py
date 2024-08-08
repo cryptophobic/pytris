@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 
 from application import config
 from application.Timer import Timer
@@ -10,44 +10,40 @@ from application.game.vectors import Vec2
 
 class Player:
 
-    def __init__(self, name: str, controls: MoveControls, speed: float = 1, color: Tuple[int, int, int] = (255, 255, 255),):
-        self.speed = speed
+    def __init__(self,
+                 name: str,
+                 controls: MoveControls,
+                 speed: float = 1.0):
+
+        self.body: Piece = Piece(shape=Shape(), velocity=Vec2(x=0, y=0), coordinates=Vec2(x=0, y=0))
+        self.__speed: List = [speed, False]
         self.__idle: bool = True
-        self.down_threshold = 0
         self.name = name
         self.prio = 0
-        self.body: Piece = Piece(
-            shape=Shape(),
-            velocity=Vec2(x=0, y=0),
-            coordinates=Vec2(x=0, y=0),
-            color=color
-        )
         self.controls = controls
         self.score: int = 0
 
     @property
-    def idle(self):
+    def speed(self):
+        return self.__speed[0]
+
+    @speed.setter
+    def speed(self, speed: float) -> None:
+        self.__speed = [speed, False]
+
+    def commit_speed(self):
+        self.__speed[1] = True
+
+    def speed_pending(self):
+        return self.__speed[1]
+
+    @property
+    def idle(self) -> bool:
         return self.__idle
 
     @idle.setter
-    def idle(self, value):
-        if value is False:
-            self.__init_threshold()
-
+    def idle(self, value: bool):
         self.__idle = value
-
-    def above_threshold(self):
-        return Timer.current_timestamp() > self.down_threshold
-
-    def calculate_threshold(self):
-        down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN // self.speed
-        self.down_threshold += down_interval
-        if self.above_threshold():
-            self.__init_threshold()
-
-    def __init_threshold(self):
-        down_interval = config.INITIAL_SPEED_OF_FALLING_DOWN // self.speed
-        self.down_threshold = Timer.current_timestamp() + down_interval
 
     def action(self, key: int):
         self.controls.action(key, self.body)

@@ -32,18 +32,22 @@ class MoveControls(UserDict):
     def __init__(self, move_left, move_right, move_down, rotate_left):
         super().__init__()
 
-        self.movements_map = Movements(
-            rotate_left=rotate_left,
-            move_right=move_right,
-            move_down=move_down,
-            move_left=move_left,
-        )
-
         self.data[rotate_left] = Action(self.rotate_left, 200)
-        #self.data[move_up] = self.move_up
-        self.data[move_left] = Action(self.move_left, 100)
+        self.data[move_left] = Action(self.move_left, 150)
         self.data[move_down] = Action(self.move_down, 30)
-        self.data[move_right] = Action(self.move_right, 100)
+        self.data[move_right] = Action(self.move_right, 150)
+
+        # alternative
+        self.movements_map = Movements(
+            rotate_left=rotate_left + 1000,
+            move_right=move_right + 1000,
+            move_down=move_down + 1000,
+            move_left=move_left + 1000,
+        )
+        self.data[self.movements_map.rotate_left] = Action(self.rotate_left)
+        self.data[self.movements_map.move_left] = Action(self.move_left)
+        self.data[self.movements_map.move_down] = Action(self.move_down)
+        self.data[self.movements_map.move_right] = Action(self.move_right)
 
     def action(self, key: int, piece: Piece):
         if key in self.data:

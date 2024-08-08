@@ -27,15 +27,13 @@ class State:
         self.key_map.load_keys_from_player(player)
 
     def draw_players(self):
+
+        self.desk.remove_lines()
+
         for player in self.players.idle_players():
             self.desk.activate_player(player)
 
         for player in self.players.sorted_dirty_players():
-            if player.above_threshold():
-                player.move_down()
-                self.desk.check_on_move(player)
-                player.calculate_threshold()
-
             if self.desk.put_player(player):
                 self.ready_for_render = True
 
