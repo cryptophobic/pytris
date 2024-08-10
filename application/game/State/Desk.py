@@ -1,48 +1,36 @@
-import sys
-from dataclasses import dataclass
-import random
-from typing import List, NamedTuple, Dict, Set, Tuple
+from typing import List, NamedTuple, Set, Tuple
 import numpy
-import numpy as np
 
 from application.game.Player import Player
+from application.game.State.PlayersCollection import PlayersCollection
 from application.game.objects import shapes
 from application.game.objects.Shape import Shape
 from application.game.vectors import Vec2
 
 
-class Position(NamedTuple):
-    x: int
-    y: int
-
-
 class Brick(NamedTuple):
     color: Tuple[int, int, int]
-    position: Position
+    position: Vec2
     name: str
+    mass: int = -1
 
 
 class ObjectsToMove(NamedTuple):
     mass: int
-    objects: Set[Player | Brick] | None
-
-
-@dataclass
-class Cell:
-    borders: int = 0
-    entity: Player | Brick | None = None
+    objects: Set[Player | Brick]
+    proposed_velocity: Vec2 = Vec2(0, 0)
 
 
 class Desk:
-    def __init__(self, height, width):
+    def __init__(self, height, width, players: PlayersCollection):
         self.__gateway: Player | None = None
         self.__width = width
         self.__height = height
-        self.__players: Dict[str, List[Position]] = {}
+        self.__players: PlayersCollection = players
         self.__bricks: List[List[Brick]] = [[] for _ in range(height)]
         self.__desk = [[None for x in range(height)] for y in range(width)]  # type: List[List[Player|Brick|None]]
 
-    def __is_valid_position(self, position: Position) -> bool:
+    def __is_valid_position(self, position: Vec2) -> bool:
         if not ((0 <= position.x < self.__width) and (position.y < self.__height)):
             return False
 
@@ -52,67 +40,28 @@ class Desk:
     def bricks(self) -> List[Brick]:
         return [x for n in self.__bricks for x in n]
 
-    def put_player(self, player: Player) -> bool:
-        approved_position = player.body.coordinates
-        move_commit = rotate_commit = False
-        shape = player.body.shape.shape
-        if player.body.is_dirty():
-            check = approved_position + player.body.velocity
+    def remove_player(self, player_name: str):
+        player = self.__players.get(player_name)
+        if player is None:
+            return
 
-            [mass, places] = self.get_obstacles_on_position(player.name, shape, check)
-            if mass == 0:
-                move_commit = True
-                approved_position = check
-
-        if player.body.rotate != 0:
-            shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
-
-            [mass, places] = self.get_obstacles_on_position(player.name, shape, approved_position)
-            if mass != 0:
-                shape = player.body.shape.shape
-            else:
-                rotate_commit = True
-
-        if not move_commit and not rotate_commit and self.__players.get(player.name) is not None:
-            return False
-
-        self.remove_player(player.name)
-        self.__players[player.name] = []
-
-        for square in shape:
-            position = Position(x=approved_position.x + square[0], y=approved_position.y + square[1])
-            self.__players[player.name].append(Position(x=position.x, y=position.y))
+        for square in player.body.shape.shape:
+            position = player.body.coordinates + square
             if position.y < 0:
                 continue
-            self.__desk[position.x][position.y] = player
-
-        player.body.coordinates = approved_position
-        player.body.shape.shape = shape
-        player.body.rotate = 0
-        player.body.velocity = Vec2(0, 0)
-        return True
-
-    def remove_player(self, player_name: str):
-        current_position = self.__players.get(player_name)
-        if current_position is not None:
-            for square in current_position:
-                if square.y < 0:
-                    continue
-                self.__desk[square.x][square.y] = None
-
-        self.__players.pop(player_name, None)
+            self.__desk[position.x][position.y] = None
 
     def get_obstacles_on_position(self, player_name: str, shape: numpy.ndarray, check: Vec2) -> ObjectsToMove:
         places = set()
         for square in shape:
-
-            if check.y + square[1] < 0:
+            position = check + square
+            if position.y < 0:
                 continue
 
-            if not self.__is_valid_position(Position(x=check.x + square[0], y=check.y + square[1])):
+            if not self.__is_valid_position(position):
                 return ObjectsToMove(mass=-1, objects=set())
 
-            place = self.__desk[check.x + square[0]][check.y + square[1]]
+            place = self.__desk[position.x][position.y]
 
             if type(place) is Brick:
                 return ObjectsToMove(mass=-1, objects=set())
@@ -140,46 +89,35 @@ class Desk:
         if not self.__reserve_gateway(player):
             return False
 
-        [mass, places] = self.get_obstacles_on_position(player.name, player.body.shape.shape, player.body.coordinates)
-        if mass != 0:
+        objects_to_move = self.get_obstacles_on_position(player.name, player.body.shape.shape, player.body.coordinates)
+        if objects_to_move.mass != 0:
             return False
 
         player.idle = False
-        self.put_player(player)
+        self.set_new_position(player)
         return True
 
     def is_grounded(self, player) -> bool:
-        if player.body.velocity.y <= 0:
-            return False
-
         place = player.body.coordinates + Vec2(0, 1)
         shape = player.body.shape.shape
-        for square in shape:
-            if not self.__is_valid_position(Position(x=place.x + square[0], y=place.y + square[1])):
-                return True
 
-            if place.y + square[1] < 0:
-                continue
-
-            is_ground = self.__desk[place.x + square[0]][place.y + square[1]]
-            if is_ground is not None and type(is_ground) is Brick:
-                return True
-
-        return False
+        objects_to_move = self.get_obstacles_on_position(player.name, shape, place)
+        return objects_to_move.mass == -1
 
     def ground(self, player):
         shape = player.body.shape.shape
         place = player.body.coordinates
         for square in shape:
+            brick_position = place + square
             brick = Brick(
                 color=player.body.shape.color,
                 name=player.name,
-                position=Position(x=place.x + square[0], y=place.y + square[1]))
+                position=brick_position)
             if place.y + square[1] < 0:
                 continue
 
-            self.__desk[place.x + square[0]][place.y + square[1]] = brick
-            self.__bricks[place.y].append(brick)
+            self.__desk[brick_position.x][brick_position.y] = brick
+            self.__bricks[brick_position.y].append(brick)
 
         player.body.shape = Shape()
         player.body.velocity = Vec2(0, 0)
@@ -187,42 +125,94 @@ class Desk:
         player.body.coordinates = Vec2(self.__width // 2, -1)
         player.idle = True
 
-        self.__players[player.name] = []
-
     def remove_lines(self):
         pass
 
-    def check_on_move(self, player: Player) -> bool:
-        check = player.body.coordinates + player.body.velocity
-        mass_to_move, places = self.get_obstacles_on_position(player.name, player.body.shape.shape, check)
+    def set_new_position(self, player: Player, position: Vec2 | None = None, shape: numpy.ndarray | None = None):
+        if position is not None and shape is not None:
+            self.remove_player(player.name)
+        else:
+            shape = player.body.shape.shape
+            position = player.body.coordinates
 
-        if mass_to_move > player.body.mass:
-            player.body.velocity = Vec2(0, 0)
-            return False
+        for square in shape:
+            square_position = position + square
+            if square_position.y < 0:
+                continue
+            self.__desk[square_position.x][square_position.y] = player
 
-        if mass_to_move < 0:
-            if self.is_grounded(player):
-                self.ground(player)
-            else:
-                player.body.velocity.x = 0
-                if player.body.velocity.y > 1:
-                    player.body.velocity.y -= 1
+        player.body.coordinates = position
+        player.body.shape.shape = shape
 
-            return False
-
-        for place in places:
-            place.prio = player.prio + 1
-            place.body.velocity += player.body.velocity
-
-        return True
-
-    def check_on_rotate(self, player: Player) -> bool:
+    def rotate(self, player, with_mass) -> tuple[bool, int]:
         rotated_shape = shapes.rotate(player.body.shape.shape, player.body.rotate)
-        mass_to_move, places = self.get_obstacles_on_position(player.name, rotated_shape, player.body.coordinates)
+        objects_to_move = self.get_obstacles_on_position(player.name, rotated_shape, player.body.coordinates)
+        is_place_available = 0 <= objects_to_move.mass <= with_mass
 
-        # TODO: maybe we can try to move nearby objects with rotating
-        if mass_to_move > 0:
-            player.body.rotate = 0
-            return False
+        if not is_place_available:
+            return False, -1
 
-        return True
+        self.set_new_position(player, player.body.coordinates, rotated_shape)
+        player.body.rotate = 0
+
+        return True, objects_to_move.mass
+
+    def move(self, player, with_mass: int = 0) -> tuple[bool, int]:
+        player_body_velocity = player.body.velocity
+        place = player.body.coordinates + player_body_velocity
+        player.body.velocity = Vec2(0, 0)
+
+        objects_to_move = self.get_obstacles_on_position(player.name, player.body.shape.shape, place)
+        is_place_available = 0 <= objects_to_move.mass <= with_mass
+
+        if not is_place_available:
+            return False, -1
+
+        if is_place_available:
+            for moveable_object in objects_to_move.objects:
+                moveable_object_velocity = moveable_object.body.velocity
+                moveable_object.body.velocity = player_body_velocity
+                is_place_available, mass = self.move(moveable_object, with_mass - moveable_object.body.mass)
+                moveable_object.body.velocity = moveable_object_velocity
+                if not is_place_available:
+                    return False, mass
+
+        self.set_new_position(player, place, player.body.shape.shape)
+
+        return True, with_mass - objects_to_move.mass
+
+    def apply(self, player: Player) -> bool:
+        possible_grounded = False
+
+        applied = False
+
+        if player.body.velocity.is_dirty():
+            to = player.body.velocity
+            push_mass = player.body.mass
+            last_velocity = Vec2(0, 0)
+            for possible_velocity in Vec2(0, 0).iterate_to(to):
+                player_velocity = possible_velocity - last_velocity
+                player.body.velocity = player_velocity
+                last_velocity = possible_velocity
+                [is_moved, push_mass] = self.move(player, with_mass=push_mass)
+                applied |= is_moved
+
+                if not is_moved:
+                    possible_grounded = player_velocity.y > 0
+                    break
+
+        if player.body.rotate != 0:
+            rotate = player.body.rotate
+            direction = 1 if rotate > 0 else -1
+            push_mass = player.body.mass
+            for _ in range(0, rotate, direction):
+                player.body.rotate = direction
+                [is_rotated, push_mass] = self.rotate(player, with_mass=push_mass)
+                applied |= is_rotated
+                if not is_rotated:
+                    break
+
+        if possible_grounded and self.is_grounded(player):
+            self.ground(player)
+
+        return applied

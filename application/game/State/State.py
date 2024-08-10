@@ -14,8 +14,8 @@ from application.game.vectors import Vec2
 class State:
     def __init__(self):
         self.ready_for_render = True
-        self.desk = Desk(config.DESK_HEIGHT, config.DESK_WIDTH)
         self.players = PlayersCollection()
+        self.desk = Desk(config.DESK_HEIGHT, config.DESK_WIDTH, self.players)
         self.key_map = KeyMap()
         self.changed = False
         pass
@@ -34,7 +34,7 @@ class State:
             self.desk.activate_player(player)
 
         for player in self.players.sorted_dirty_players():
-            if self.desk.put_player(player):
+            if self.desk.apply(player):
                 self.ready_for_render = True
 
     def update_player(self, player_name: str, key: int, events_log: List[KeyPressLog]):
@@ -47,11 +47,6 @@ class State:
                 continue
 
             player.action(key)
-            if player.body.is_dirty():
-                self.desk.check_on_move(player)
-
-            if player.body.rotate != 0:
-                self.desk.check_on_rotate(player)
 
     def update_players(self, events: Dict[int, List[KeyPressLog]]):
         for key, events_log in events.items():
