@@ -14,11 +14,11 @@ from application.game.events.Events import KeyPressLog
 class State:
     def __init__(self):
         self.players = PlayersCollection()
-        self.desk = Desk(self.players, width=config.DESK_WIDTH, height=config.DESK_HEIGHT)
+        self.ground = Ground()
+        self.desk = Desk(self.players, self.ground, width=config.DESK_WIDTH, height=config.DESK_HEIGHT)
         self.gateway = Gateway(self.desk, self.players)
         self.__events_handler = EventsHandler(self.players)
         self.__movement = Movement(self.desk)
-        self.ground = Ground(self.desk)
         self.ready_for_render = False
 
     def register_player(self, player: Player):
@@ -38,12 +38,12 @@ class State:
 
         for player in self.players.sorted_dirty_players():
             [is_applied, possibly_grounded] = self.__movement.apply(player)
-            print(player.body.coordinates)
             if is_applied:
                 self.ready_for_render = True
 
             if possibly_grounded:
                 if self.ground.is_grounded(player):
-                    self.ground.ground(player)
-                    self.desk.astonish_player(player.name)
+                    self.desk.remove_player(player.name)
+                    if self.ground.is_lines_erased():
+                        self.ready_for_render = True
                     self.gateway.enqueue(player)
