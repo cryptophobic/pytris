@@ -3,15 +3,9 @@ from typing import NamedTuple, Set, List, Tuple
 import numpy
 
 from application.game.Player import Player
+from application.game.State.Ground import Ground, Brick
 from application.game.State.PlayersCollection import PlayersCollection
 from application.game.vectors import Vec2
-
-
-class Brick(NamedTuple):
-    color: Tuple[int, int, int]
-    position: Vec2
-    name: str
-    mass: int = -1
 
 
 class ObjectsToMove(NamedTuple):
@@ -21,11 +15,12 @@ class ObjectsToMove(NamedTuple):
 
 
 class Desk:
-    def __init__(self, players: PlayersCollection, width: int, height: int):
+    def __init__(self, players: PlayersCollection, ground: Ground, width: int, height: int):
+        self.__ground: Ground = ground
         self.players = players
         self.__width = width
         self.__height = height
-        self.__desk = [[None for x in range(height)] for y in range(width)]  # type: List[List[Player|Brick|None]]
+        self.__desk = [[None for x in range(height)] for y in range(width)]  # type: List[List[Player|None]]
 
     @property
     def height(self):
@@ -40,21 +35,6 @@ class Desk:
             return False
 
         return True
-
-    def astonish_player(self, player_name):
-        player = self.players.get(player_name)
-        if player is None:
-            return
-
-        for square in player.body.shape.shape:
-            position = player.body.coordinates + square
-            if position.y < 0:
-                continue
-
-            self.__desk[position.x][position.y] = Brick(
-                color=player.body.shape.color,
-                name=player.name,
-                position=position)
 
     def remove_player(self, player_name: str):
         player = self.players.get(player_name)
@@ -93,10 +73,12 @@ class Desk:
             if not self.__is_valid_position(position):
                 return ObjectsToMove(mass=-1, objects=set())
 
-            place = self.__desk[position.x][position.y]
+            place = self.__ground.bricks[position.y].get(position.x)
 
             if type(place) is Brick:
                 return ObjectsToMove(mass=-1, objects=set())
+
+            place = self.__desk[position.x][position.y]
 
             if place is not None and place.name != player_name:
                 places.update({place})
