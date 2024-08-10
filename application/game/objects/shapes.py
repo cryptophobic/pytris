@@ -5,6 +5,14 @@ import numpy as np
 ROTATE_LEFT = -1
 ROTATE_RIGHT = 1
 
+PIECE_GE = 0
+PIECE_REVERTED_GE = 1
+PIECE_TRIPLE = 2
+PIECE_SQUARE = 3
+PIECE_TWICE = 4
+PIECE_TWICE_REVERTED = 5
+PIECE_STICK = 6
+
 _rotation_matrix = {
     ROTATE_LEFT: np.array([[0, 1], [-1, 0]]),
     ROTATE_RIGHT: np.array([[0, -1], [1, 0]]),
