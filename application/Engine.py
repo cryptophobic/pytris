@@ -1,9 +1,9 @@
 from typing import List
 
 from application import config
+from application.game.State.State import State
 from application.game.events.Events import Events
 from application.game.Player import Player
-from application.game.State.State import State
 from application.Renderer import Renderer
 from application.Timer import Timer
 
@@ -66,8 +66,8 @@ class Engine(object):
             if self.ticker.last_timestamp >= render_threshold:
                 render_threshold += self.interval
                 events = self.eventProcessor.slice(first_timestamp, render_threshold)
-                self.stateManager.update_players(events)
+                self.stateManager.update_state(events)
                 first_timestamp = self.ticker.last_timestamp
                 if self.stateManager.ready_for_render is True:
-                    self.renderer.render(self.stateManager.players.to_render_players(), self.stateManager.desk.bricks)
+                    self.renderer.render(self.stateManager.players.to_render_players(), self.stateManager.ground.bricks)
                     self.stateManager.ready_for_render = False

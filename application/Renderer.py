@@ -2,8 +2,9 @@ from typing import List
 
 from application import config
 from application.game.Player import Player
-from application.game.State.Desk import Brick
 import pygame
+
+from application.game.State.Desk import Brick
 
 
 class Renderer:

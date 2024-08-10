@@ -45,7 +45,7 @@ class Player:
     def idle(self, value: bool):
         self.__idle = value
 
-    def action(self, key: int):
+    def dispatch(self, key: int):
         self.controls.action(key, self.body)
 
     def move_down(self):

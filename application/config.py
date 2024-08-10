@@ -22,5 +22,5 @@ print(BLOCK_WIDTH)
 players = [
     Player(name='player1', controls=uldr, speed=1),
     Player(name='player2', controls=wasd, speed=1),
-    Player(name='player3', controls=tfgh, speed=1)
+    # Player(name='player3', controls=tfgh, speed=1)
 ]
