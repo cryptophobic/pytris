@@ -1,8 +1,11 @@
+from functools import reduce
+
 import pygame
 from application.Timer import Timer
 from typing import Dict, Tuple, List
 from dataclasses import dataclass
 from application.game.controls import MoveControls
+from application.game.events.Gamepads import Gamepads
 from application.game.events.Scheduler import Scheduler
 
 
@@ -26,6 +29,7 @@ class Events:
 
     def __init__(self):
         self.scheduler = Scheduler()
+        self.gamepads = Gamepads()
         self.subscribers: Dict[str, Tuple] = {}
         self.key_map: Dict[int, KeyPressLog] = {}
         self.keys_down: List[int] = []
@@ -73,20 +77,22 @@ class Events:
 
     def listen(self, ticks: int):
         pressed = pygame.key.get_pressed()
-
         for idx, key in enumerate(self.keys_down):
 
             if key not in self.key_map:
                 self.keys_down.pop(idx)
                 continue
 
-            if (self.is_down_event_expired(key) or not pressed[key]) and not self.scheduler.is_pressed(key):
+            if (self.is_down_event_expired(key)
+                    or (not pressed[key] and not self.scheduler.is_pressed(key) and not self.gamepads.pressed(key))):
                 self.key_map[key].down = False
                 self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=False))
                 self.keys_down.pop(idx)
 
         for key, events_log in self.key_map.items():
-            if (pressed[key] or self.scheduler.is_pressed(key)) and events_log.down is not True:
+            if (events_log.down is not True
+                    and (pressed[key] or self.scheduler.is_pressed(key) or self.gamepads.pressed(key))):
+
                 self.key_map[key].down = True
                 self.key_map[key].log.append(KeyPressLogRecord(dt=ticks, down=True))
                 self.keys_down.append(key)

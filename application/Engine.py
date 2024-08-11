@@ -13,9 +13,9 @@ import pygame
 class Engine(object):
 
     def __init__(self):
+        self.renderer = Renderer()
         self.eventProcessor = Events()
         self.stateManager = State()
-        self.renderer = Renderer()
         self.ticker = Timer()
         self.game_over = False
         self.interval = 1000 / config.FPS
