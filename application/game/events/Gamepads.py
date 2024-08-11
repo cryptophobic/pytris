@@ -16,7 +16,7 @@ class Gamepads:
     def pressed(self, button):
         button -= 2000
         for joystick in self.__joysticks:
-            if button < joystick.get_numbuttons() and joystick.get_button(button):
+            if 0 <= button < joystick.get_numbuttons() and joystick.get_button(button):
                 return True
 
         return False
