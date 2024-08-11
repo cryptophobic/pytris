@@ -1,7 +1,5 @@
-from typing import Tuple, List
+from typing import List
 
-from application import config
-from application.Timer import Timer
 from application.game.controls import MoveControls
 from application.game.objects.Piece import Piece
 from application.game.objects.Shape import Shape
@@ -25,7 +23,7 @@ class Player:
 
     @property
     def speed(self):
-        return self.__speed[0]
+        return self.__speed[0] + self.score * 0.01
 
     @speed.setter
     def speed(self, speed: float) -> None:

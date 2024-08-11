@@ -34,15 +34,15 @@ class Ground:
             for x, brick in line_bricks.items():
                 self.__bricks_in_line.append(Brick(color=brick.color, name=brick.name, position=Vec2(x, y)))
 
-    def is_lines_erased(self) -> bool:
-        erased = False
+    def is_lines_erased(self) -> int:
+        erased = 0
         for line in sorted(self.lines_to_erase):
-            erased = True
+            erased += 1
             self.__bricks.pop(line)
             self.__bricks = [{}] + self.__bricks
 
         self.lines_to_erase = set()
-        if erased:
+        if erased > 0:
             self.__rebuild_bricks_in_line()
         return erased
 

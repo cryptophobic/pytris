@@ -4,9 +4,9 @@ from application.game.controls import wasd, uldr, tfgh
 INITIAL_SPEED_OF_FALLING_DOWN = 1000
 FPS = 60
 
-SCREEN_SIZE = (400, 800)
-DESK_HEIGHT = 30
-DESK_WIDTH = 15
+SCREEN_SIZE = (500, 1000)
+DESK_HEIGHT = 20
+DESK_WIDTH = 10
 SQUARE_BLOCK = False
 BLOCK_HEIGHT = SCREEN_SIZE[1] / DESK_HEIGHT
 BLOCK_WIDTH = SCREEN_SIZE[0] / DESK_WIDTH
@@ -20,7 +20,7 @@ print(BLOCK_WIDTH)
 
 
 players = [
-    Player(name='player1', controls=uldr, speed=2),
+    Player(name='player1', controls=uldr, speed=0.5),
     # Player(name='player2', controls=wasd, speed=1.5),
     # Player(name='player3', controls=tfgh, speed=1)
 ]

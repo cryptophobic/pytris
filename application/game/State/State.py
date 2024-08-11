@@ -44,6 +44,10 @@ class State:
             if possibly_grounded:
                 if self.ground.is_grounded(player):
                     self.desk.remove_player(player.name)
-                    if self.ground.is_lines_erased():
+                    number_of_lines = self.ground.is_lines_erased()
+                    if number_of_lines > 0:
                         self.ready_for_render = True
+                        player.score += number_of_lines
+                        player.speed = player.speed
+                        print (player.score)
                     self.gateway.enqueue(player)
