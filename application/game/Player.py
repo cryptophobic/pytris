@@ -26,10 +26,10 @@ class Player:
     @property
     def speed(self):
 #        print(self.__speed, self.grounded_number * 0.3, self.score * 0.4)
-        if ((self.__speed + self.grounded_number * 0.3) - self.score * 0.4) <= 0:
+        if ((self.__speed + self.grounded_number * 0.27) - self.score * 0.4) <= self.__speed:
             return self.__speed
 
-        return self.__speed + self.grounded_number * 0.3 - self.score * 0.4
+        return self.__speed + self.grounded_number * 0.27 - self.score * 0.4
 
     def update_speed(self, update: float) -> None:
         self.__dirty_speed = update
