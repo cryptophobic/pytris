@@ -14,7 +14,9 @@ class Player:
                  speed: float = 1.0):
 
         self.body: Piece = Piece(shape=Shape(), velocity=Vec2(x=0, y=0), coordinates=Vec2(x=0, y=0))
-        self.__speed: List = [speed, False]
+        self.__speed: float = speed
+        self.__dirty_speed = True
+        self.grounded_number: int = 0
         self.__idle: bool = True
         self.name = name
         self.prio = 0
@@ -23,17 +25,20 @@ class Player:
 
     @property
     def speed(self):
-        return self.__speed[0] + self.score * 0.01
+#        print(self.__speed, self.grounded_number * 0.3, self.score * 0.4)
+        if ((self.__speed + self.grounded_number * 0.3) - self.score * 0.4) <= 0:
+            return self.__speed
 
-    @speed.setter
-    def speed(self, speed: float) -> None:
-        self.__speed = [speed, False]
+        return self.__speed + self.grounded_number * 0.3 - self.score * 0.4
+
+    def update_speed(self, update: float) -> None:
+        self.__dirty_speed = update
 
     def commit_speed(self):
-        self.__speed[1] = True
+        self.update_speed(False)
 
     def speed_pending(self):
-        return self.__speed[1]
+        return self.__dirty_speed
 
     @property
     def idle(self) -> bool:

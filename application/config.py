@@ -4,7 +4,7 @@ from application.game.controls import wasd, uldr, tfgh
 INITIAL_SPEED_OF_FALLING_DOWN = 1000
 FPS = 60
 
-SCREEN_SIZE = (500, 1000)
+SCREEN_SIZE = (400, 800)
 DESK_HEIGHT = 20
 DESK_WIDTH = 10
 SQUARE_BLOCK = False

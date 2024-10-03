@@ -15,7 +15,7 @@ class PlayersCollection(UserDict):
         return list(filter(lambda x: x.idle is False, self.data.values()))
 
     def to_apply_speed_players(self):
-        return list(filter(lambda x: x.speed_pending() is False, self.data.values()))
+        return list(filter(lambda x: x.speed_pending() is True, self.data.values()))
 
     def sorted_dirty_players(self):
         def is_dirty(player: Player) -> bool:
